@@ -87,17 +87,16 @@ def handle_unknown(file_name, target_folder):
     file_name.replace(target_folder / normalized_name)
 
 
-def handle_archive(file_name, target_folder):
+def handle_archive(file_name: Path, target_folder: Path):
     target_folder.mkdir(exist_ok=True, parents=True)
-    new_name = normalize(file_name.stem)  # Видаляємо розширення, залишаючи тільки ім'я
-    new_folder = target_folder / new_name
-    new_folder.mkdir(exist_ok=True, parents=True)
+    folder_for_file = target_folder / normalize(file_name.name.replace(file_name.suffix, ''))
+    folder_for_file.mkdir(exist_ok=True, parents=True)
     try:
-        shutil.unpack_archive(str(file_name), str(new_folder))
+        shutil.unpack_archive(str(file_name.absolute()), str(folder_for_file.absolute()))
     except shutil.ReadError:
-        print(f'Unable to unpack archive: {file_name}')
-    else:
-        file_name.unlink()
+        folder_for_file.rmdir()
+        return
+    file_name.unlink()
 
 if __name__ == '__main__':
     folder_process = sys.argv[1]
